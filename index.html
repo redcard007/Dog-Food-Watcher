@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dogfeed Sweeper</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#1f5f4a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dogfeed">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column like a phone app; a price "ticket" up top, stores below, history last. */
+:root {
+  --bg: #f5f3ee; --surface: #ffffff; --ink: #1d2420; --muted: #66706a; --line: #e2e0d8;
+  --accent: #1f5f4a; --accent-ink: #ffffff; --tag: #f2b705; --tag-ink: #2a2100;
+  --good: #1d7a4c; --good-bg: #e3f3ea; --warn: #8a5a00; --warn-bg: #fbefd2; --bad: #a33a2b;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --surface: #1b211e; --ink: #e9ede9; --muted: #9aa59f; --line: #2c3430;
+  --accent: #5fbf99; --accent-ink: #0c1712; --tag: #f2c233; --tag-ink: #241c00;
+  --good: #6fd39f; --good-bg: #173326; --warn: #f0c060; --warn-bg: #3a2e12; --bad: #f08a7a; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #121614; --surface: #1b211e; --ink: #e9ede9; --muted: #9aa59f; --line: #2c3430;
+  --accent: #5fbf99; --accent-ink: #0c1712; --tag: #f2c233; --tag-ink: #241c00;
+  --good: #6fd39f; --good-bg: #173326; --warn: #f0c060; --warn-bg: #3a2e12; --bad: #f08a7a; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
+main { max-width: 520px; margin: 0 auto; display: grid; gap: 22px; }
+h1, h2 { font-family: var(--display); margin: 0; text-wrap: balance; }
+h1 { font-size: 1.05rem; font-weight: 600; color: var(--muted); letter-spacing: .01em; }
+h2 { font-size: 1.1rem; font-weight: 600; }
+.num { font-variant-numeric: tabular-nums; }
+.top { display: flex; align-items: center; gap: 10px; }
+.top svg { width: 34px; height: 34px; flex: none; }
+.product { font-family: var(--display); font-weight: 800; font-size: 1.6rem; line-height: 1.15; margin-top: 2px; }
+.demo { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 10px 12px; font-size: .88rem; }
+.ticket { background: var(--accent); color: var(--accent-ink); border-radius: 18px; padding: 20px; display: grid; gap: 6px; position: relative; overflow: hidden; }
+.ticket::after { content: ""; position: absolute; right: -22px; top: 50%; width: 44px; height: 44px; border-radius: 50%; background: var(--bg); transform: translateY(-50%); }
+.label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; opacity: .85; font-weight: 600; }
+.big { font-family: var(--display); font-weight: 800; font-size: 3.2rem; line-height: 1; }
+.big small { font-size: 1.1rem; font-weight: 600; margin-left: 6px; opacity: .85; }
+.pill { justify-self: start; border-radius: 999px; padding: 4px 12px; font-weight: 600; font-size: .85rem; background: var(--tag); color: var(--tag-ink); }
+.pill.off { background: color-mix(in srgb, var(--accent-ink) 18%, transparent); color: var(--accent-ink); }
+.meta { font-size: .82rem; opacity: .85; }
+.stores { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 13px 16px; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.row:first-child { border-top: 0; }
+.row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.row .name { font-weight: 600; min-width: 0; }
+.row .price { font-weight: 600; text-align: right; }
+.row .sub { font-size: .8rem; color: var(--muted); grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 8px; }
+.row.deal .price { color: var(--good); }
+.row.deal { background: var(--good-bg); }
+.down { color: var(--good); } .up { color: var(--bad); }
+.section { display: grid; gap: 10px; }
+.chart { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 8px 6px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; gap: 14px; font-size: .78rem; color: var(--muted); padding: 0 8px 6px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.note { font-size: .88rem; color: var(--muted); }
+.note code { background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .82rem; }
+button { font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="110" fill="var(--accent)"/><g fill="var(--accent-ink)"><ellipse cx="256" cy="320" rx="92" ry="78"/><ellipse cx="150" cy="215" rx="38" ry="50"/><ellipse cx="362" cy="215" rx="38" ry="50"/><ellipse cx="210" cy="140" rx="36" ry="48"/><ellipse cx="302" cy="140" rx="36" ry="48"/></g></svg>
+    <div><h1>Dogfeed Sweeper</h1><div class="product" id="product">Loading…</div></div>
+  </header>
+
+  <div class="demo" id="demo" hidden>These are example prices so you can see how it works. Real prices appear after the first check runs.</div>
+
+  <section class="ticket" aria-live="polite">
+    <span class="label">Best price right now</span>
+    <div class="big num" id="best">–</div>
+    <span class="pill" id="status">–</span>
+    <span class="meta" id="checked"></span>
+  </section>
+
+  <section class="section">
+    <h2>Stores</h2>
+    <div class="stores" id="stores"></div>
+  </section>
+
+  <section class="section">
+    <h2>Price history</h2>
+    <div class="chart"><svg id="chart" viewBox="0 0 360 180" role="img" aria-label="Best price over time"></svg>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Best price</span><span><i style="background:var(--tag)"></i>Your target</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Alerts</h2>
+    <p class="note" id="alerts">Install the free <b>ntfy</b> app and subscribe to your topic name to get a push notification the moment a store drops to your target.</p>
+    <button id="refresh" type="button">Reload latest prices</button>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const aud = (n) => "$" + n.toFixed(2);
+
+function demoData() {
+  const stores = [
+    ["Pet Circle", 112.99], ["Petbarn", 119.99], ["Woolworths", 124.00], ["Coles", 122.50], ["Amazon AU", 109.95]
+  ];
+  const history = [];
+  const start = Date.now() - 29 * 864e5;
+  for (let d = 0; d < 30; d++) {
+    history.push({ at: new Date(start + d * 864e5).toISOString(), results: stores.map(([name, base], i) => {
+      let p = base + Math.sin(d / 3 + i) * 3;
+      if (name === "Pet Circle" && d >= 27) p = 94.99;           // a sale in the last few days
+      if (name === "Petbarn" && d >= 12 && d <= 16) p = 99.99;   // an earlier sale
+      return { name, url: "#", price: Math.round(p * 100) / 100, error: null };
+    }) });
+  }
+  return { demo: true, product: "Example: 12 kg adult dry food", targetPrice: 100, history };
+}
+
+async function load() {
+  try {
+    const res = await fetch("prices.json?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    if (!data.history?.some((h) => h.results.some((r) => r.price))) throw new Error("no prices yet");
+    return data;
+  } catch { return demoData(); }
+}
+
+function render(data) {
+  $("demo").hidden = !data.demo;
+  $("product").textContent = data.product;
+  const target = data.targetPrice;
+  const last = data.history.at(-1), prev = data.history.at(-2);
+  const priced = last.results.filter((r) => r.price).sort((a, b) => a.price - b.price);
+  const best = priced[0];
+
+  if (best) {
+    $("best").innerHTML = `${aud(best.price)}<small>${best.name}</small>`;
+    const s = $("status");
+    if (best.price <= target) { s.textContent = `On sale: ${aud(target - best.price)} under your ${aud(target)} target`; s.className = "pill"; }
+    else { s.textContent = `${aud(best.price - target)} above your ${aud(target)} target`; s.className = "pill off"; }
+  } else { $("best").textContent = "No prices yet"; $("status").hidden = true; }
+  $("checked").textContent = "Last checked " + new Date(last.at).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+
+  const order = [...last.results].sort((a, b) => (a.price ?? 1e9) - (b.price ?? 1e9));
+  $("stores").innerHTML = order.map((r) => {
+    const before = prev?.results.find((p) => p.name === r.name)?.price;
+    let change = "No change since last check";
+    if (r.price && before && Math.abs(r.price - before) >= 0.01) {
+      const diff = r.price - before;
+      change = `<span class="${diff < 0 ? "down" : "up"}">${diff < 0 ? "Down" : "Up"} ${aud(Math.abs(diff))}</span> since last check`;
+    }
+    if (!r.price) change = r.error || "Couldn't read a price";
+    const deal = r.price && r.price <= target;
+    const tag = r.url && r.url !== "#" ? "a" : "div";
+    return `<${tag} class="row${deal ? " deal" : ""}" ${tag === "a" ? `href="${r.url}" target="_blank" rel="noopener"` : ""}>
+      <span class="name">${r.name}</span><span class="price num">${r.price ? aud(r.price) : "–"}</span>
+      <span class="sub"><span>${change}</span><span>${deal ? "Below target" : ""}</span></span></${tag}>`;
+  }).join("");
+
+  drawChart(data.history, target);
+}
+
+function drawChart(history, target) {
+  const pts = history.map((h) => ({ t: new Date(h.at).getTime(), p: Math.min(...h.results.map((r) => r.price || Infinity)) })).filter((x) => isFinite(x.p));
+  const svg = $("chart");
+  if (pts.length < 2) { svg.innerHTML = `<text x="180" y="95" text-anchor="middle" fill="var(--muted)" font-size="12">History appears after a few checks</text>`; return; }
+  const W = 360, H = 180, L = 44, R = 10, T = 12, B = 26;
+  const vals = pts.map((x) => x.p).concat(target);
+  let lo = Math.floor(Math.min(...vals) / 5) * 5 - 5, hi = Math.ceil(Math.max(...vals) / 5) * 5 + 5;
+  const t0 = pts[0].t, t1 = pts.at(-1).t;
+  const x = (t) => L + (t - t0) / (t1 - t0) * (W - L - R);
+  const y = (p) => T + (hi - p) / (hi - lo) * (H - T - B);
+  const step = Math.max(5, Math.ceil((hi - lo) / 4 / 5) * 5);
+  let g = "";
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step)
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="var(--muted)">$${v}</text>`;
+  const fmt = (t) => new Date(t).toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+  g += `<text x="${L}" y="${H - 6}" font-size="10" fill="var(--muted)">${fmt(t0)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end" font-size="10" fill="var(--muted)">${fmt(t1)}</text>`;
+  const line = pts.map((d, i) => `${i ? "L" : "M"}${x(d.t).toFixed(1)},${y(d.p).toFixed(1)}`).join("");
+  const area = `${line}L${x(t1)},${H - B}L${L},${H - B}Z`;
+  const end = pts.at(-1);
+  svg.innerHTML = g +
+    `<path d="${area}" fill="var(--accent)" opacity=".12"/>` +
+    `<line x1="${L}" x2="${W - R}" y1="${y(target)}" y2="${y(target)}" stroke="var(--tag)" stroke-width="2" stroke-dasharray="5 4"/>` +
+    `<path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>` +
+    `<circle cx="${x(end.t)}" cy="${y(end.p)}" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+}
+
+async function start() { render(await load()); }
+$("refresh").addEventListener("click", start);
+start();
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>

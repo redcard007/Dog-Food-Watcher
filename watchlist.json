@@ -1,0 +1,12 @@
+{
+  "product": "Your dog food (edit me)",
+  "targetPrice": 100,
+  "notify": { "ntfyTopic": "" },
+  "stores": [
+    { "name": "Pet Circle", "url": "https://www.petcircle.com.au/product/REPLACE-ME" },
+    { "name": "Petbarn", "url": "https://www.petbarn.com.au/REPLACE-ME" },
+    { "name": "Woolworths", "url": "https://www.woolworths.com.au/shop/productdetails/REPLACE-ME" },
+    { "name": "Coles", "url": "https://www.coles.com.au/product/REPLACE-ME" },
+    { "name": "Amazon AU", "url": "https://www.amazon.com.au/dp/REPLACE-ME" }
+  ]
+}

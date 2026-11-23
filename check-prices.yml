@@ -1,0 +1,24 @@
+name: Check dog food prices
+on:
+  schedule:
+    - cron: "0 20,2,8 * * *"   # 6am, 12pm and 6pm Brisbane time
+  workflow_dispatch: {}          # lets you press "Run" by hand
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node checker/check.mjs
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      - name: Save results
+        run: |
+          git config user.name "price-bot"
+          git config user.email "price-bot@users.noreply.github.com"
+          git add docs/prices.json
+          git diff --cached --quiet || git commit -m "Price check $(date -u +%F_%H%M)"
+          git push
