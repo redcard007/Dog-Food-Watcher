@@ -1,7 +1,7 @@
 {
   "product": "Eukanuba Large Breed Senior Dry Dog Food",
   "targetPrice": 120,
-  "notify": { "ntfyTopic": "" },
+  "notify": { "ntfyTopic": "dave-dogfood-7k2q" },
   "stores": [
     { "name": "Pet Circle", "url": "https://www.petcircle.com.au/product/eukanuba-senior-large-breed-dry-dog-food/m342200" },
     { "name": "Petbarn", "url": "https://www.petbarn.com.au/REPLACE-ME" },
