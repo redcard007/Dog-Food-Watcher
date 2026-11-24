@@ -12,13 +12,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - run: node checker/check.mjs
+      - run: node check.mjs
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
       - name: Save results
         run: |
           git config user.name "price-bot"
           git config user.email "price-bot@users.noreply.github.com"
-          git add docs/prices.json
+          git add prices.json
           git diff --cached --quiet || git commit -m "Price check $(date -u +%F_%H%M)"
           git push
