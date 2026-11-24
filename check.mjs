@@ -1,11 +1,11 @@
-// Dogfeed sweeper price checker. Run with: node checker/check.mjs
+// Dogfeed sweeper price checker. Run with: node check.mjs
 // Reads watchlist.json, fetches each store page, pulls out the price,
-// appends to docs/prices.json and sends a push alert when a price hits the target.
+// appends to prices.json and sends a push alert when a price hits the target.
 import { readFile, writeFile } from "node:fs/promises";
 
-const ROOT = new URL("..", import.meta.url);
+const ROOT = new URL(".", import.meta.url);
 const watch = JSON.parse(await readFile(new URL("watchlist.json", ROOT), "utf8"));
-const dataFile = new URL("docs/prices.json", ROOT);
+const dataFile = new URL("prices.json", ROOT);
 let data;
 try { data = JSON.parse(await readFile(dataFile, "utf8")); } catch { data = { history: [] }; }
 
