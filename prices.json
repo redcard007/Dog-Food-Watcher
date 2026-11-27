@@ -384,6 +384,41 @@
           "error": "No link set yet"
         }
       ]
+    },
+    {
+      "at": "2026-11-27T08:51:35.054Z",
+      "results": [
+        {
+          "name": "Pet Circle",
+          "url": "https://www.petcircle.com.au/product/eukanuba-senior-large-breed-dry-dog-food/m342200",
+          "price": null,
+          "error": "HTTP 429"
+        },
+        {
+          "name": "Petbarn",
+          "url": "https://www.petbarn.com.au/REPLACE-ME",
+          "price": null,
+          "error": "No link set yet"
+        },
+        {
+          "name": "Woolworths",
+          "url": "https://www.woolworths.com.au/shop/productdetails/REPLACE-ME",
+          "price": null,
+          "error": "No link set yet"
+        },
+        {
+          "name": "Coles",
+          "url": "https://www.coles.com.au/product/REPLACE-ME",
+          "price": null,
+          "error": "No link set yet"
+        },
+        {
+          "name": "Amazon AU",
+          "url": "https://www.amazon.com.au/dp/REPLACE-ME",
+          "price": null,
+          "error": "No link set yet"
+        }
+      ]
     }
   ],
   "product": "Eukanuba Large Breed Senior Dry Dog Food",
